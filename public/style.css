@@ -1,0 +1,33 @@
+body {
+    font-family: 'Ropa Sans', sans-serif;
+    color: #333;
+    max-width: 700px;
+    margin: 0 auto;
+    position: relative;
+    background-color: #EDEDED;
+  }
+
+  h1 {
+    margin: 10px 0;
+    font-size: 40px;
+  }
+
+  #loadingMessage {
+    height: 144px;
+    width: 192px;
+    text-align: center;
+    padding: 40px;
+    background-color: #eee;
+  }
+
+  /* 카메라 영역 */
+  #canvas {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* 안내 메세지 */
+  #alert_msg {
+    text-align: center;
+    line-height: 30px;
+  }
