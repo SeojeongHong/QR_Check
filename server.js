@@ -1,33 +1,32 @@
 var express = require('express');
+const mysql = require('mysql2');
 var app = express();
-const oracledb = require('oracledb');
-
-const hostname = '127.0.0.1';
+const hostname = 'localhost';
 const port = 3000;
 
 app.use(express.static(__dirname));
 
-app.get('/', function (req, res) {
+app.get('/', async (req, res) =>{
   res.sendFile(__dirname + '/QR_Check.html');
 });
-let connection;
+
+
 var server = app.listen(port, hostname, async () => {
   console.log(`Server running at http://${hostname}:${port}/`);
 
-  
-
   try {
     // Oracle DB 정보
-    connection = await oracledb.getConnection({
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      connectString: process.env.DB_CONNECT_STRING
+    const connection = mysql.createConnection({
+      host: 'localhost',
+      user: 'test',
+      password: '1234',
+      database: 'qr_check'
     });
 
-    console.log('DB연결 성공');
+    console.log('DB 연결 성공');
 
   } catch (err) {
-    console.error('오류:', err);
+    console.error('DB 연결 오류:', err);
   }
 });
 
@@ -39,15 +38,5 @@ process.on('SIGINT', async function () {
   } catch (err) {
     console.error('서버 종료 오류:', err);
   }
-
-  if (connection) {
-    try {
-      await connection.close();
-      console.log('DB연결 종료');
-    } catch (err) {
-      console.error('DB 연결 종료 오류:', err);
-    }
-  }
-
   process.exit(0);
 });
