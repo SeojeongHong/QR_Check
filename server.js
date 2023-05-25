@@ -40,9 +40,9 @@ app.get('/:id', async (req, res) =>{
       return;
     }
 
-    const courseName = results[0].c_name;
 
-    if (courseName) {
+    if (results.length > 0) {
+      const courseName = results[0].c_name;
       res.sendFile(__dirname + '/QR_Check.html');
       console.log(`과목: ${courseName}`);
     } else {
