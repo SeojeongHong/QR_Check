@@ -9,6 +9,12 @@ var mytimerId;
 //화면에 표시될 현재 시간
 var now_time = document.getElementById("now_time");
 
+//강의 정보 표시 - 쿠키 값 읽어오기
+var course_name = document.getElementById("course_name");
+var course_professor = document.getElementById("professor");
+course_name.innerHTML=decodeURIComponent(getCookie('courseName'));
+course_professor.innerHTML=decodeURIComponent(getCookie('professor'));
+ 
 //바코드 인식 네모 선
 function drawLine(begin, end, color) {
     canvas.beginPath();
@@ -73,7 +79,7 @@ function tick() {
             .catch(function (error) {
               console.error(error);
             });
-            
+
             drawLine(code.location.topLeftCorner, code.location.topRightCorner, "#FF3B58");
             drawLine(code.location.topRightCorner, code.location.bottomRightCorner, "#FF3B58");
             drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner, "#FF3B58");
@@ -92,6 +98,37 @@ function tick() {
 
       }
 }
+
+//쿠키 값 읽어오는 함수 -> 강의 정보 표시
+function getCookie(cname) {
+
+    var name = cname + "=";
+  
+    var decodedCookie = decodeURIComponent(document.cookie);
+  
+    var ca = decodedCookie.split(';');
+  
+    for(var i = 0; i <ca.length; i++) {
+  
+      var c = ca[i];
+  
+      while (c.charAt(0) == ' ') {
+  
+        c = c.substring(1);
+  
+      }
+  
+      if (c.indexOf(name) == 0) {
+  
+        return c.substring(name.length, c.length);
+  
+      }
+  
+    }
+  
+    return "";
+  
+  } 
 
 //t시간 지연 함수
 function myStopFunction() {

@@ -3,6 +3,7 @@ const mysql = require('mysql2');
 var app = express();
 const hostname = 'localhost';
 const port = 3000;
+
 // body-parser
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -30,13 +31,13 @@ var server = app.listen(port, hostname, async () => {
 });
 
 //과목번호(학수번호) -> url
+//해당 과목 수업 시간 검사
 var coureid;
 
 app.get('/:id', async (req, res) => {
   courseid = req.params.id;
-
-  //과목번호(c_num)으로 과목 이름(c_name) 받아오는 쿼리
-  const query = 'SELECT c_name FROM course WHERE c_num = ?';
+  //과목번호(c_num)으로 과목 정보 받아옴
+  const query = 'SELECT * FROM course WHERE c_num = ?';
   connection.query(query, [courseid], (err, results) => {
     if (err) {
       console.error('Error executing query:', err);
@@ -44,11 +45,15 @@ app.get('/:id', async (req, res) => {
       return;
     }
 
-
     if (results.length > 0) {
       const courseName = results[0].c_name;
+      const professor = results[0].professor;
+
+      //과목정보 쿠키에 저장
+      res.cookie('courseName', courseName);
+      res.cookie('professor', professor);
       res.sendFile(__dirname + '/QR_Check.html');
-      console.log(`과목: ${courseName}`);
+      // console.log(`과목: ${courseName}`);
     } else {
       res.status(404).send('과목을 찾을 수 없습니다.');
     }
@@ -57,6 +62,8 @@ app.get('/:id', async (req, res) => {
 });
 
 //출석 - 데이터 삽입
+//1. 수강 정보 검사
+//2. 수업 시간 검사
 app.post('/insertData', async (req, res) => {
 
   const hakbun = req.body.qrdata.hakbun;
@@ -74,7 +81,7 @@ app.post('/insertData', async (req, res) => {
 
     const params = [hakbun, courseid, today];
 
-    connection.query(insertQuery, params, (error, results) => { // 쿼리 실행 방식 수정
+    connection.query(insertQuery, params, (error, results) => {
       if (error) {
         console.error('오류:', error);
         res.status(500).send('데이터 삽입 오류');
