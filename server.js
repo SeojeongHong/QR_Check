@@ -3,13 +3,18 @@ const mysql = require('mysql2');
 var app = express();
 const hostname = 'localhost';
 const port = 3000;
-var connection=null;
+// body-parser
+const bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+var connection = null;
 app.use(express.static(__dirname));
 
 var server = app.listen(port, hostname, async () => {
   console.log(`Server running at http://${hostname}:${port}/`);
   try {
-    // Oracle DB 정보
+    // Mysql DB 정보
     connection = mysql.createConnection({
       host: 'localhost',
       user: 'test',
@@ -19,7 +24,6 @@ var server = app.listen(port, hostname, async () => {
 
     console.log('DB 연결 성공');
 
-
   } catch (err) {
     console.error('DB 연결 오류:', err);
   }
@@ -28,7 +32,7 @@ var server = app.listen(port, hostname, async () => {
 //과목번호(학수번호) -> url
 var coureid;
 
-app.get('/:id', async (req, res) =>{
+app.get('/:id', async (req, res) => {
   courseid = req.params.id;
 
   //과목번호(c_num)으로 과목 이름(c_name) 받아오는 쿼리
@@ -52,6 +56,38 @@ app.get('/:id', async (req, res) =>{
 
 });
 
+//출석 - 데이터 삽입
+app.post('/insertData', async (req, res) => {
+
+  const hakbun = req.body.qrdata.hakbun;
+  let today = new Date();
+  let minutes = today.getMinutes();
+
+  console.log('server:' + hakbun);
+  try {
+    //출석 데이터 삽입 SQL
+    //학번 - 과목코드 - 출석시간
+    const insertQuery = `
+    INSERT INTO QRCHECK (s_num, c_num, time)
+    VALUES (?, ?, ?)
+    `;
+
+    const params = [hakbun, courseid, today];
+
+    connection.query(insertQuery, params, (error, results) => { // 쿼리 실행 방식 수정
+      if (error) {
+        console.error('오류:', error);
+        res.status(500).send('데이터 삽입 오류');
+      } else {
+        console.log('데이터 삽입 성공');
+        res.send('데이터 삽입 성공');
+      }
+    });
+  } catch (error) {
+    console.error('오류:', error);
+    res.status(500).send('데이터 삽입 오류');
+  }
+});
 
 
 

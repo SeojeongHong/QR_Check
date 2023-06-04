@@ -65,6 +65,15 @@ function tick() {
             console.log('check: ' + qrdata.check);
             console.log('학번: ' + qrdata.hakbun);
 
+            //출석체크 - 데이터 삽입
+            axios.post('/insertData', {qrdata})
+            .then(function (response) {
+              console.log(response.data);
+            })
+            .catch(function (error) {
+              console.error(error);
+            });
+            
             drawLine(code.location.topLeftCorner, code.location.topRightCorner, "#FF3B58");
             drawLine(code.location.topRightCorner, code.location.bottomRightCorner, "#FF3B58");
             drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner, "#FF3B58");
