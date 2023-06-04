@@ -62,7 +62,7 @@ app.get('/:id', async (req, res) => {
 });
 
 //출석 - 데이터 삽입
-//1. 수강 정보 검사
+//1. 수강 여부 검사
 //2. 수업 시간 검사
 app.post('/insertData', async (req, res) => {
 
@@ -70,26 +70,37 @@ app.post('/insertData', async (req, res) => {
   let today = new Date();
   let minutes = today.getMinutes();
 
+
   console.log('server:' + hakbun);
   try {
     //출석 데이터 삽입 SQL
     //학번 - 과목코드 - 출석시간
     const insertQuery = `
-    INSERT INTO QRCHECK (s_num, c_num, time)
-    VALUES (?, ?, ?)
-    `;
-
+      INSERT INTO QRCHECK (s_num, c_num, time)
+        VALUES (?, ?, ?)
+        `;
     const params = [hakbun, courseid, today];
+    //1. 수강 여부 검사
+    connection.promise().query('SELECT ' + hakbun + ' FROM ENROL WHERE C_NUM=' + courseid + ';')
+      .then(([rows]) => {
+        if (rows.length > 0) {
+          console.log('수강 O');
+          connection.query(insertQuery, params, (error, results) => {
+            if (error) {
+              console.error('오류:', error);
+              res.status(500).send('데이터 삽입 오류');
+            } else {
+              console.log('데이터 삽입 성공');
+              res.send('데이터 삽입 성공');
+            }
+          });
+        } else {
+          console.log('수강 X, 데이터 삽입X');
+        }
+      }).catch((error) => {
+        console.error(error);
+      });
 
-    connection.query(insertQuery, params, (error, results) => {
-      if (error) {
-        console.error('오류:', error);
-        res.status(500).send('데이터 삽입 오류');
-      } else {
-        console.log('데이터 삽입 성공');
-        res.send('데이터 삽입 성공');
-      }
-    });
   } catch (error) {
     console.error('오류:', error);
     res.status(500).send('데이터 삽입 오류');
