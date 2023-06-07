@@ -68,67 +68,63 @@ app.post('/insertData', async (req, res) => {
 
   const hakbun = req.body.qrdata.hakbun;
   let today = new Date();
+  let ymd = today.getFullYear+'-'+today.getMonth+'-'+today.getDate;
   const week = ['일', '월', '화', '수', '목', '금', '토'];
-  let day = today.getDay();
+  let day = today.getDay();  
   let minutes = today.getMinutes();
 
-
-  console.log('server:' + hakbun);
   try {
 
-  const rs = await connection.promise().query(`SELECT * FROM COURSE_TIME WHERE C_NUM=${courseid} AND DAY='${week[day]}'`);
-  if(rs[0].length>0){
-      console.log(week[day]+'요일 수업o');
-      const start_time =rs[0].map(row => row.START_TIME);
-      const end_time =rs[0].map(row => row.END_TIME);
-
-      const date1 = new Date(`2023-06-05 ${start_time}`);
-      const date2 = new Date(`2023-06-05 ${end_time}`);
-      
-      if (date1 < today && today <date2) {
-        console.log(`수업중`);
-      } else {
-        console.log(`수업시간 아님`);
-      }
-    }else{
-      //삽입X -> 해당 강의의 출석 시간이 아닙니다.
-      console.log(week[day]+'요일 수업X');
-    }
-    
     //학번 - 과목코드 - 출석시간
     const insertQuery = `
       INSERT INTO QRCHECK (s_num, c_num, time)
         VALUES (?, ?, ?)
         `;
     const params = [hakbun, courseid, today];
-    //1. 수강 여부 검사
-    connection.promise().query('SELECT ' + hakbun + ' FROM ENROL WHERE C_NUM=' + courseid + ';')
-      .then(([rows]) => {
-        if (rows.length > 0) {
-          console.log('수강 O');
-          connection.query(insertQuery, params, (error, results) => {
-            if (error) {
-              console.error('오류:', error);
-              res.status(500).send('데이터 삽입 오류');
-            } else {
-              console.log('데이터 삽입 성공');
-              res.send('데이터 삽입 성공');
-            }
-          });
-        } else {
-          console.log('수강 X, 데이터 삽입X');
-        }
-      }).catch((error) => {
-        console.error(error);
-      });
 
+    //1. 수강 여부 검사 로직
+    const q1 = await connection.promise().query(`SELECT * FROM ENROL WHERE C_NUM=${courseid} AND S_NUM=${hakbun};`);
+
+    if(q1[0].length>0){
+      //수강O
+
+      //2. 강의 시간 검사 로직
+      const q2 = await connection.promise().query(`SELECT * FROM COURSE_TIME WHERE C_NUM=${courseid} AND DAY='${week[day]}'`);
+      if(q2[0].length>0){
+        //오늘 수업ㅇ
+          const start_time =q2[0][0].start_time;
+          const end_time =q2[0][0].end_time;
+    
+          const date1 = new Date(`${ymd} ${start_time}`);
+          const date2 = new Date(`${ymd} ${end_time}`);
+          
+
+          if (date1 < today && today <date2) {
+            connection.query(insertQuery, params, (error, results) => {
+              if (error) {
+                console.error('오류:', error);
+                res.status(500).send('데이터 삽입 오류');
+              } else {
+                console.log('데이터 삽입 성공');
+                res.send('데이터 삽입 성공');
+              }
+            });
+            console.log(`정상 출석`);
+          } else {
+            console.log(`해당 과목의 출석 시간이 아닙니다1`);
+          }
+        }else{
+          console.log(`해당 과목의 출석 시간이 아닙니다2`);
+        }
+
+    }else{
+      //수강X
+      console.log(`해당 과목을 수강하지 않습니다`);
+    }
   } catch (error) {
     console.error('오류:', error);
-    res.status(500).send('데이터 삽입 오류');
   }
 });
-
-
 
 // 서버 종료 핸들러
 process.on('SIGINT', async function () {
