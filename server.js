@@ -68,12 +68,33 @@ app.post('/insertData', async (req, res) => {
 
   const hakbun = req.body.qrdata.hakbun;
   let today = new Date();
+  const week = ['일', '월', '화', '수', '목', '금', '토'];
+  let day = today.getDay();
   let minutes = today.getMinutes();
 
 
   console.log('server:' + hakbun);
   try {
-    //출석 데이터 삽입 SQL
+
+  const rs = await connection.promise().query(`SELECT * FROM COURSE_TIME WHERE C_NUM=${courseid} AND DAY='${week[day]}'`);
+  if(rs[0].length>0){
+      console.log(week[day]+'요일 수업o');
+      const start_time =rs[0].map(row => row.START_TIME);
+      const end_time =rs[0].map(row => row.END_TIME);
+
+      const date1 = new Date(`2023-06-05 ${start_time}`);
+      const date2 = new Date(`2023-06-05 ${end_time}`);
+      
+      if (date1 < today && today <date2) {
+        console.log(`수업중`);
+      } else {
+        console.log(`수업시간 아님`);
+      }
+    }else{
+      //삽입X -> 해당 강의의 출석 시간이 아닙니다.
+      console.log(week[day]+'요일 수업X');
+    }
+    
     //학번 - 과목코드 - 출석시간
     const insertQuery = `
       INSERT INTO QRCHECK (s_num, c_num, time)
