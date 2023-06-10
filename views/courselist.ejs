@@ -18,8 +18,7 @@
 <body>
   <!-- 상단 바 -->
   <div style="background-color: #1E407B; height: 100pt; color: #eee; display: flex;">
-    <div style="height: 50%;">sdsdfsf</div><br><hr>
-    <h1>QR 출결 관리 시스템</h1>
+    <h1><a href='/' style=" text-decoration: none; color: white;">QR 출결 관리 시스템</a></h1>
   </div><br>
 
   <div class="container">
@@ -34,36 +33,51 @@
           <canvas id="canvas" hidden style="width: 130%"></canvas>
         </div>
       </div>
-
-      <!-- 빈칸 -->
       <div class="col-1"></div>
-
-      <!-- 안내 메세지 -->
       <div class="col-7">
-        <div class="container">
-          <div class="row row-cols-1">
-            <!-- 수강 정보 -->
-            <div class="col" style="height: 100pt;" id="mylist" ><br>
-              
-
-
-              <% if (results.length > 0) { %>
-                <ul>
-                  <% for (let i = 0; i < results.length; i++) { %>
-                    <li><%= results[i].c_num %> - <%= results[i].c_name %></li>
-                  <% } %>
-                </ul>
-              <% } else { %>
-                <p>과목을 찾을 수 없습니다.</p>
-              <% } %>
-
-              
-            </div>
-          </div>
+        <div class="alert alert-secondary" role="alert" style="height: 100%">
+          <h4 style="position: absolute;
+                top: 45%; left: 10%;">
+          <% if (results[0].s_num!=null) { %>
+            '<%= results[0].s_num %>' 강의 검색 결과</h5>
+            <%}else{%>
+              QR코드로 
+                강의를 검색하세요
+              <%}%>
+          </h4>
         </div>
       </div>
     </div>
   </div>
+<!--목록-->
+<div style="height: 100pt;" id="mylist" ><br>
+  <table class="table">
+    <thead>
+      <tr class="table-active">
+        <th scope="col">학수번호</th>
+        <th scope="col">교과목명</th>
+        <th scope="col">담당교수</th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (results.length > 0) { %>
+          <% for (let i = 0; i < results.length; i++) { %>
+            <tr>
+              <th scope="row"><%= results[i].c_num %></th>
+              <td><%= results[i].c_name %></td>
+              <td><%= results[i].professor %></td>
+              <td><button type="button" class="btn btn-outline-secondary" onclick="location.href='/course/<%= results[i].c_num %>'">이동</button></td>
+            </tr>
+          <% } %>
+      <% } else { %>
+        <p>과목을 찾을 수 없습니다.</p>
+      <% } %>
+    </tbody>
+  </table>
+
+  
+</div>
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.24.0/axios.min.js"></script>
 <script src="../public/qrScan.js"></script>
