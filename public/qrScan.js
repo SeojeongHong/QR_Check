@@ -8,7 +8,8 @@ var strTemp = "";
 var mytimerId;
 //화면에 표시될 현재 시간
 var now_time = document.getElementById("now_time");
-
+var status_msg = document.getElementById("status");
+const msg_class = document.getElementById('msg_class');
 //강의 정보 표시 - 쿠키 값 읽어오기
 var course_name = document.getElementById("course_name");
 var course_professor = document.getElementById("professor");
@@ -80,12 +81,14 @@ function tick() {
               console.error(error);
             });
 
+
+            ///쿠키 값 읽어서?css 변경
             drawLine(code.location.topLeftCorner, code.location.topRightCorner, "#FF3B58");
             drawLine(code.location.topRightCorner, code.location.bottomRightCorner, "#FF3B58");
             drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner, "#FF3B58");
             drawLine(code.location.bottomLeftCorner, code.location.topLeftCorner, "#FF3B58");
             outputData.hidden = false;
-            outputData.innerText = code.data;
+            // outputData.innerText = code.data;
         } else {
             outputData.hidden = true;
         }
@@ -157,6 +160,24 @@ function clock() {
     let seconds = padZero(today.getSeconds());
     //[2020-20-20 00;00]
     now_time.innerHTML = year + "/" + month + "/" + date + "("+week[day]+") " + hour + ":" + minutes + ":" + seconds; /* html에 출력 */
+
+
+    //상태 메세지
+    //수강X
+    if(decodeURIComponent(getCookie('status'))=='ERROR'){
+      msg_class.classList.remove('alert-secondary');
+      msg_class.classList.add('alert-danger');
+      status_msg.innerHTML = "해당 과목에 등록되지 않은 학번입니다";
+    }else if(decodeURIComponent(getCookie('status'))=='PRESENT'){
+      msg_class.classList.remove('alert-secondary');
+      msg_class.classList.add('alert-success');
+      status_msg.innerHTML = "정상적으로 출석되었습니다";
+    }else{
+      msg_class.classList.remove('alert-success');
+      msg_class.classList.remove('alert-danger');
+      msg_class.classList.add('alert-secondary');
+      status_msg.innerHTML = "QR코드를 인식해 주세요";
+    }
 }
 clock();
 setInterval(clock, 1000);

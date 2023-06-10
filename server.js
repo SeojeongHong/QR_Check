@@ -72,7 +72,7 @@ app.post('/insertData', async (req, res) => {
   const week = ['일', '월', '화', '수', '목', '금', '토'];
   let day = today.getDay();  
   let minutes = today.getMinutes();
-
+  let status='test';
   try {
 
     //학번 - 과목코드 - 출석시간
@@ -98,32 +98,49 @@ app.post('/insertData', async (req, res) => {
           const date1 = new Date(`${ymd} ${start_time}`);
           const date2 = new Date(`${ymd} ${end_time}`);
           
-
-          if (date1 < today && today <date2) {
+          console.log(date1);
+          console.log(today);
+          console.log(date2);
+          if (-1) {
+            status="PRESENT";
             connection.query(insertQuery, params, (error, results) => {
               if (error) {
                 console.error('오류:', error);
                 res.status(500).send('데이터 삽입 오류');
               } else {
                 console.log('데이터 삽입 성공');
+                res.cookie('status', status,{ maxAge: 2000 });
                 res.send('데이터 삽입 성공');
               }
             });
+            
             console.log(`정상 출석`);
           } else {
+            status="LATE";
+            res.cookie('status', status,{ maxAge: 2000 });
+                res.send('지각');
             console.log(`해당 과목의 출석 시간이 아닙니다1`);
           }
         }else{
+          status="ABSENT";
+          res.cookie('status', status,{ maxAge: 2000 });
+          res.send('결석');
           console.log(`해당 과목의 출석 시간이 아닙니다2`);
         }
 
     }else{
       //수강X
+      status="ERROR";
+      res.cookie('status', status,{ maxAge: 2000 });
+      res.send('지각');
       console.log(`해당 과목을 수강하지 않습니다`);
     }
+
+    
   } catch (error) {
     console.error('오류:', error);
   }
+
 });
 
 // 서버 종료 핸들러
