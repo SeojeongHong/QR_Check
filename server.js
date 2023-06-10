@@ -1,6 +1,8 @@
 var express = require('express');
 const mysql = require('mysql2');
 var app = express();
+app.set('views', __dirname + '/views');
+app.set('view engine', 'ejs');
 const hostname = 'localhost';
 const port = 3000;
 
@@ -30,11 +32,51 @@ var server = app.listen(port, hostname, async () => {
   }
 });
 
+
+//모든 강의 조회 페이지
+app.get('/', function(req, res){
+  const query = 'select * from course';
+  connection.query(query,(err, results) => {
+    if (err) {
+      console.error('Error executing query:', err);
+      res.status(500).send('서버 오류');
+      return;
+    }
+
+  res.render('courselist.ejs', { results: results }, function(err ,html){
+      if (err){
+          console.log(err)
+      }
+      res.send(html) // 응답 종료
+  })
+})
+});
+
+//학번으로 수강하는 강의 조회
+app.get('/search/:hakbun', function(req, res){
+  hakbun = req.params.hakbun;
+  
+  const query = 'select * from course natural join enrol where s_num=?';
+  connection.query(query, [hakbun],(err, results) => {
+    if (err) {
+      console.error('Error executing query:', err);
+      res.status(500).send('서버 오류');
+      return;
+    }
+
+  res.render('courselist.ejs', { results: results }, function(err ,html){
+      if (err){
+          console.log(err)
+      }
+      res.send(html) // 응답 종료
+  })
+})
+});
 //과목번호(학수번호) -> url
 //해당 과목 수업 시간 검사
 var coureid;
 
-app.get('/:id', async (req, res) => {
+app.get('/course/:id', async (req, res) => {
   courseid = req.params.id;
   //과목번호(c_num)으로 과목 정보 받아옴
   const query = 'SELECT * FROM course WHERE c_num = ?';
@@ -45,18 +87,12 @@ app.get('/:id', async (req, res) => {
       return;
     }
 
-    if (results.length > 0) {
-      const courseName = results[0].c_name;
-      const professor = results[0].professor;
-
-      //과목정보 쿠키에 저장
-      res.cookie('courseName', courseName);
-      res.cookie('professor', professor);
-      res.sendFile(__dirname + '/QR_Check.html');
-      // console.log(`과목: ${courseName}`);
-    } else {
-      res.status(404).send('과목을 찾을 수 없습니다.');
-    }
+    res.render('QR_Check.ejs', { results: results }, function(err ,html){
+      if (err){
+          console.log(err)
+      }
+      res.send(html) // 응답 종료
+  })
   });
 
 });
@@ -101,7 +137,7 @@ app.post('/insertData', async (req, res) => {
           console.log(date1);
           console.log(today);
           console.log(date2);
-          if (-1) {
+          if (true) {
             status="PRESENT";
             connection.query(insertQuery, params, (error, results) => {
               if (error) {
