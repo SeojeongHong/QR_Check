@@ -18,25 +18,24 @@
 <body>
   <!-- 상단 바 -->
   <div style="background-color: #1E407B; height: 100pt; color: #eee; display: flex;">
-    <h1><a href='/' style=" text-decoration: none; color: white;">QR 출결 관리 시스템</a></h1>
+    <h2><a href='/' style=" text-decoration: none; color: white; position: absolute;
+      top: 8%; left: 5%;">QR 출결 관리 시스템</a></h2>
   </div><br>
 
   <div class="container">
     <div class="row">
       <!-- 카메라 화면 -->
-      <div class="col-4">
-        <div class="col">
+      <div class="col-3">
           <!--    카메라x 안내 메세지-->
-          <div id="loadingMessage" style="width: 130%; height: 260px; background-color: #333; color: #EDEDED;">
+          <div id="loadingMessage" style="width: 120%; height: 100%; background-color: #333; color: #EDEDED;">
             카메라를 켜주세요</div>
           <!--    카메라 화면 출력-->
-          <canvas id="canvas" hidden style="width: 130%"></canvas>
-        </div>
+          <canvas id="canvas" hidden style="width: 120%; height: 100%x"></canvas>
       </div>
       <div class="col-1"></div>
-      <div class="col-7">
+      <div class="col-8">
         <div class="alert alert-secondary" role="alert" style="height: 100%">
-          <h4 style="position: absolute;
+          <h5 style="position: absolute;
                 top: 45%; left: 10%;">
           <% if (results[0].s_num!=null) { %>
             '<%= results[0].s_num %>' 강의 검색 결과</h5>
@@ -44,7 +43,7 @@
               QR코드로 
                 강의를 검색하세요
               <%}%>
-          </h4>
+          </h5>
         </div>
       </div>
     </div>

@@ -72,6 +72,7 @@ app.get('/search/:hakbun', function(req, res){
   })
 })
 });
+
 //과목번호(학수번호) -> url
 //해당 과목 수업 시간 검사
 var coureid;
@@ -101,22 +102,35 @@ app.get('/course/:id', async (req, res) => {
 //1. 수강 여부 검사
 //2. 수업 시간 검사
 app.post('/insertData', async (req, res) => {
-
   const hakbun = req.body.qrdata.hakbun;
   let today = new Date();
   let ymd = today.getFullYear+'-'+today.getMonth+'-'+today.getDate;
   const week = ['일', '월', '화', '수', '목', '금', '토'];
   let day = today.getDay();  
-  let minutes = today.getMinutes();
+  
+  //날짜 정보
+  let year = today.getFullYear();
+  let month = String(today.getMonth() + 1).padStart(2, '0');
+  let date = String(today.getDate()).padStart(2, '0');
+  //mysql date 형식 yyy-mm-dd
+  let mysqlDate = year + '-' + month + '-' + date;
+
+  //시간 정보
+  let hours = String(today.getHours()).padStart(2, '0');
+  let minutes = String(today.getMinutes()).padStart(2, '0');
+  let seconds = String(today.getSeconds()).padStart(2, '0');
+  //mysql time 형식 hh:mm:ss
+  let mysqlTime = hours + ':' + minutes + ':' + seconds;
+
+  //출석 상태 (출석, 지각, 결석)
   let status='test';
   try {
 
-    //학번 - 과목코드 - 출석시간
+    //학번 - 과목코드 - 출석날짜 - 출석시간 - 출석상태
     const insertQuery = `
-      INSERT INTO QRCHECK (s_num, c_num, time)
-        VALUES (?, ?, ?)
+      INSERT INTO QRCHECK (s_num, c_num, date, time, status)
+        VALUES (?, ?, ?, ?, ?)
         `;
-    const params = [hakbun, courseid, today];
 
     //1. 수강 여부 검사 로직
     const q1 = await connection.promise().query(`SELECT * FROM ENROL WHERE C_NUM=${courseid} AND S_NUM=${hakbun};`);
@@ -139,10 +153,30 @@ app.post('/insertData', async (req, res) => {
           console.log(date2);
           if (true) {
             status="PRESENT";
+            const params = [hakbun, courseid, mysqlDate,mysqlTime, status];
             connection.query(insertQuery, params, (error, results) => {
               if (error) {
+                status="DUPLICATE";
+                res.cookie('status', status,{ maxAge: 2000 });
+                res.status(500).send('중복 출석 오류');
+                 console.log(`중복`);
+                 
+              } else {
+                console.log('데이터 삽입 성공');
+                res.cookie('status', status,{ maxAge: 2000 });
+                res.send('데이터 삽입 성공');
+                console.log(`정상 출석`);
+              }
+            });
+
+          } else {
+            status="LATE";
+            const params = [hakbun, courseid, mysqlDate, mysqlTime, status];
+            connection.query(insertQuery, params, (error, results) => {
+              if (error) {
+                status="DUPLICATE";
                 console.error('오류:', error);
-                res.status(500).send('데이터 삽입 오류');
+                res.status(500).send('중복 출석 오류');
               } else {
                 console.log('데이터 삽입 성공');
                 res.cookie('status', status,{ maxAge: 2000 });
@@ -150,12 +184,7 @@ app.post('/insertData', async (req, res) => {
               }
             });
             
-            console.log(`정상 출석`);
-          } else {
-            status="LATE";
-            res.cookie('status', status,{ maxAge: 2000 });
-                res.send('지각');
-            console.log(`해당 과목의 출석 시간이 아닙니다1`);
+            console.log(`지각`);
           }
         }else{
           status="ABSENT";
@@ -171,7 +200,6 @@ app.post('/insertData', async (req, res) => {
       res.send('지각');
       console.log(`해당 과목을 수강하지 않습니다`);
     }
-
     
   } catch (error) {
     console.error('오류:', error);

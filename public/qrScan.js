@@ -3,7 +3,7 @@ var isScanning = false;
 var canvasElement = document.getElementById("canvas");
 var canvas = canvasElement.getContext("2d");
 var loadingMessage = document.getElementById("loadingMessage");
-// var outputData = document.getElementById("outputData");
+var outputData = document.getElementById("outputData");
 var strTemp = "";
 var mytimerId;
 //현재 페이지 경로
@@ -70,21 +70,26 @@ function tick() {
       console.log('check: ' + qrdata.check);
       console.log('학번: ' + qrdata.hakbun);
 
+      if (qrdata.check != 'PK') {
+        setCookie('status','X');
+        console.log('x');
+      } else {
+        //현재 페이지가 강의 페이지인 경우 -> 출석
+        if (currentPath.startsWith('/course')) {
 
-      //현재 페이지가 강의 페이지인 경우 -> 출석
-      if (currentPath.startsWith('/course')) {
-
-        //출석체크 - 데이터 삽입
-        axios.post('/insertData', { qrdata })
-          .then(function (response) {
-            console.log(response.data);
-          })
-          .catch(function (error) {
-            console.error(error);
-          });
-      }else if(currentPath.startsWith('/search') || currentPath=='/'){
-        location.href="/search/"+qrdata.hakbun;
+          //출석체크 - 데이터 삽입
+          axios.post('/insertData', { qrdata })
+            .then(function (response) {
+              console.log(response.data);
+            })
+            .catch(function (error) {
+              console.error(error);
+            });
+        } else if (currentPath.startsWith('/search') || currentPath == '/') {
+          location.href = "/search/" + qrdata.hakbun;
+        }
       }
+
 
 
       ///쿠키 값 읽어서?css 변경
@@ -92,11 +97,11 @@ function tick() {
       drawLine(code.location.topRightCorner, code.location.bottomRightCorner, "#FF3B58");
       drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner, "#FF3B58");
       drawLine(code.location.bottomLeftCorner, code.location.topLeftCorner, "#FF3B58");
-      // outputData.hidden = false;
-      // outputData.innerText = code.data;
+      outputData.hidden = false;
+      outputData.innerText = code.data;
     } else {
 
-      // outputData.hidden = true;
+      outputData.hidden = true;
     }
   }
   if (isScanning) {
@@ -139,6 +144,13 @@ function getCookie(cname) {
 
 }
 
+function setCookie(name, value) {
+  const date = new Date();
+  date.setTime(date.getTime() + 2 * 1000); // 밀리초 단위로 계산하기 위해 1000을 곱합니다.
+  const expires = 'expires=' + date.toUTCString();
+  document.cookie = name + '=' + value + ';' + expires + ';path=/';
+}
+
 //t시간 지연 함수
 function myStopFunction() {
   isScanning = true;
@@ -178,7 +190,15 @@ function clock() {
     msg_class.classList.remove('alert-secondary');
     msg_class.classList.add('alert-success');
     status_msg.innerHTML = "정상적으로 출석되었습니다";
-  } else {
+  } else if (decodeURIComponent(getCookie('status')) == 'DUPLICATE') {
+    msg_class.classList.remove('alert-secondary');
+    msg_class.classList.add('alert-warning');
+    status_msg.innerHTML = "중복";
+  }else if (decodeURIComponent(getCookie('status')) == 'X') {
+    msg_class.classList.remove('alert-secondary');
+    msg_class.classList.add('alert-danger');
+    status_msg.innerHTML = "잘못된 QR입니다";
+  }else {
     msg_class.classList.remove('alert-success');
     msg_class.classList.remove('alert-danger');
     msg_class.classList.add('alert-secondary');
