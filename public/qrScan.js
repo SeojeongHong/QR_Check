@@ -187,7 +187,7 @@ function clock() {
   if (decodeURIComponent(getCookie('status')) == 'ERROR') {
     msg_class.classList.remove('alert-secondary');
     msg_class.classList.add('alert-danger');
-    status_msg.innerHTML = "해당 과목에 등록되지 않은 학번입니다";
+    status_msg.innerHTML = "해당 과목에 등록되지 않은 QR입니다";
   } else if (decodeURIComponent(getCookie('status')) == 'PRESENT') {
     msg_class.classList.remove('alert-secondary');
     msg_class.classList.add('alert-success');
@@ -195,11 +195,15 @@ function clock() {
   } else if (decodeURIComponent(getCookie('status')) == 'DUPLICATE') {
     msg_class.classList.remove('alert-secondary');
     msg_class.classList.add('alert-warning');
-    status_msg.innerHTML = "중복";
+    status_msg.innerHTML = "이미 출석된 QR입니다";
   }else if (decodeURIComponent(getCookie('status')) == 'LATE') {
     msg_class.classList.remove('alert-secondary');
     msg_class.classList.add('alert-warning');
     status_msg.innerHTML = "지각입니다";
+  }else if (decodeURIComponent(getCookie('status')) == 'ABSENT') {
+    msg_class.classList.remove('alert-secondary');
+    msg_class.classList.add('alert-info');
+    status_msg.innerHTML = "해당 과목의 출석 시간이 아닙니다";
   }else if (decodeURIComponent(getCookie('status')) == 'X') {
     msg_class.classList.remove('alert-secondary');
     msg_class.classList.add('alert-danger');
