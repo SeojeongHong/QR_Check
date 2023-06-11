@@ -64,7 +64,8 @@ function tick() {
         date_m: str.slice(21, 23),    //날짜 - 월
         date_d: str.slice(23, 25),    //날짜 - 일
         time_h: str.slice(25, 27),    //시간 - 시
-        time_m: str.slice(27, 29)    //시간 - 분
+        time_m: str.slice(27, 29),    //시간 - 분
+        time_s: str.slice(29, 31)    //시간 - 초
       }
 
       console.log('check: ' + qrdata.check);
@@ -97,11 +98,12 @@ function tick() {
       drawLine(code.location.topRightCorner, code.location.bottomRightCorner, "#FF3B58");
       drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner, "#FF3B58");
       drawLine(code.location.bottomLeftCorner, code.location.topLeftCorner, "#FF3B58");
+      if (currentPath.startsWith('/course')) {
       outputData.hidden = false;
-      outputData.innerText = code.data;
+      outputData.innerText = code.data;}
     } else {
-
-      outputData.hidden = true;
+      if (currentPath.startsWith('/course')) {
+       outputData.hidden = true;}
     }
   }
   if (isScanning) {
@@ -194,12 +196,17 @@ function clock() {
     msg_class.classList.remove('alert-secondary');
     msg_class.classList.add('alert-warning');
     status_msg.innerHTML = "중복";
+  }else if (decodeURIComponent(getCookie('status')) == 'LATE') {
+    msg_class.classList.remove('alert-secondary');
+    msg_class.classList.add('alert-warning');
+    status_msg.innerHTML = "지각입니다";
   }else if (decodeURIComponent(getCookie('status')) == 'X') {
     msg_class.classList.remove('alert-secondary');
     msg_class.classList.add('alert-danger');
     status_msg.innerHTML = "잘못된 QR입니다";
   }else {
     msg_class.classList.remove('alert-success');
+    msg_class.classList.remove('alert-warning');
     msg_class.classList.remove('alert-danger');
     msg_class.classList.add('alert-secondary');
     status_msg.innerHTML = "QR코드를 인식해 주세요";
