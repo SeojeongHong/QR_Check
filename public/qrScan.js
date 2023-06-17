@@ -56,28 +56,21 @@ function tick() {
 
       //인식한 문자열을 구조체로 저장
       let str = code.data;
-      let splitStr = [...str];
+
       var qrdata = {
         check: str.slice(0, 2),       //올바른 QR코드 형식인지를 판단
         hakbun: str.slice(8, 17),     //학번
-        date_y: str.slice(17, 21),    //날짜 - 연도
+        date_y: str.slice(17, 21),    //날짜 - 연
         date_m: str.slice(21, 23),    //날짜 - 월
         date_d: str.slice(23, 25),    //날짜 - 일
         time_h: str.slice(25, 27),    //시간 - 시
         time_m: str.slice(27, 29),    //시간 - 분
-        time_s: str.slice(29, 31)    //시간 - 초
+        time_s: str.slice(29, 31)     //시간 - 초
       }
 
-      console.log('check: ' + qrdata.check);
-      console.log('학번: ' + qrdata.hakbun);
-
-      if (qrdata.check != 'PK') {
-        setCookie('status','X');
-        console.log('x');
-      } else {
+      if (qrdata.check == 'PK') {
         //현재 페이지가 강의 페이지인 경우 -> 출석
         if (currentPath.startsWith('/course')) {
-
           //출석체크 - 데이터 삽입
           axios.post('/insertData', { qrdata })
             .then(function (response) {
@@ -86,9 +79,12 @@ function tick() {
             .catch(function (error) {
               console.error(error);
             });
-        } else if (currentPath.startsWith('/search') || currentPath == '/') {
+        } else if (currentPath.startsWith('/search') || currentPath=='/') {
           location.href = "/search/" + qrdata.hakbun;
         }
+      } else {
+        setCookie('status', 'X');
+        console.log('x');
       }
 
 
@@ -212,6 +208,7 @@ function clock() {
     msg_class.classList.remove('alert-success');
     msg_class.classList.remove('alert-warning');
     msg_class.classList.remove('alert-danger');
+    msg_class.classList.remove('alert-info');
     msg_class.classList.add('alert-secondary');
     status_msg.innerHTML = "QR코드를 인식해 주세요";
   }

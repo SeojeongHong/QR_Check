@@ -24,7 +24,7 @@ body {
   #canvas {
     width: 100%;
     height: 100%;
-    transform : scaleX(-1); /*카메라 좌우반전*/
+    transform : scaleY(-1); /*카메라 좌우반전*/
   }
 
   /* 안내 메세지 */

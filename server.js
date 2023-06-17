@@ -51,10 +51,13 @@ app.get('/', function (req, res) {
 
 //QR학번으로 수강하는 강의 목록 조회
 app.get('/search/:hakbun', function (req, res) {
-  //파라미터로 학번 받아옴
+  //URL 경로에서 학번 추출
   hakbun = req.params.hakbun;
 
+   //수강 목록을 검색하기 위한 쿼리
   const query = 'SELECT * FROM COURSE NATURAL JOIN ENROL WHERE S_NUM = ?';
+
+  //쿼리 결과를 클라이언트(수강목록 페이지)로 전달
   connection.query(query, [hakbun], (err, results) => {
     if (err) {
       console.error('Error executing query:', err);
@@ -64,9 +67,9 @@ app.get('/search/:hakbun', function (req, res) {
 
     res.render('courselist.ejs', { results: results }, function (err, html) {
       if (err) {
-        console.log(err)
+        console.log(err);
       }
-      res.send(html) // 응답 종료
+      res.send(html); // 응답 종료
     })
   })
 });
@@ -75,9 +78,9 @@ app.get('/search/:hakbun', function (req, res) {
 //해당 과목 수업 시간 검사
 var courseid;
 app.get('/course/:id', async (req, res) => {
-  //파라미터로 학수번호 받아옴
+  //URL경로에서 학수번호 추출
   courseid = req.params.id;
-
+  //강의 정보를 받아오기 위한 쿼리
   const query = 'SELECT * FROM COURSE WHERE C_NUM = ?';
   connection.query(query, [courseid], (err, results) => {
     if (err) {
@@ -87,15 +90,42 @@ app.get('/course/:id', async (req, res) => {
     }
     res.render('QR_Check.ejs', { results: results }, function (err, html) {
       if (err) {
-        console.log(err)
+        console.log(err);
       }
-      res.send(html) // 응답 종료
+      res.send(html);
     })
   });
 
 });
 
-//시스템 시간 정보 -> 출석데이터로 사용
+// //시스템 시간 정보 -> 출석데이터로 사용
+// let today = new Date();
+// const week = ['일', '월', '화', '수', '목', '금', '토'];
+// let day = today.getDay();
+// //날짜 정보 - 시스템 시간
+// let year = today.getFullYear();
+// let month = String(today.getMonth() + 1).padStart(2, '0');
+// let date = String(today.getDate()).padStart(2, '0');
+// //mysql date 형식 yyy-mm-dd
+// let mysqlDate = year + '-' + month + '-' + date;
+
+// //시간 정보 - 시스템 시간
+// let hours = String(today.getHours()).padStart(2, '0');
+// let minutes = String(today.getMinutes()).padStart(2, '0');
+// let seconds = String(today.getSeconds()).padStart(2, '0');
+// //mysql time 형식 hh:mm:ss
+// let mysqlTime = hours + ':' + minutes + ':' + seconds;
+
+//출석 - 데이터 삽입
+//1. 수강 여부 검사
+//2. 수업 시간 검사
+app.post('/insertData', async (req, res) => {
+  
+  let qrdata = req.body.qrdata;
+  let hakbun = qrdata.hakbun;
+
+  //시스템 시간 정보 -> 출석데이터로 사용
+  //
 let today = new Date();
 const week = ['일', '월', '화', '수', '목', '금', '토'];
 let day = today.getDay();
@@ -112,13 +142,6 @@ let minutes = String(today.getMinutes()).padStart(2, '0');
 let seconds = String(today.getSeconds()).padStart(2, '0');
 //mysql time 형식 hh:mm:ss
 let mysqlTime = hours + ':' + minutes + ':' + seconds;
-
-//출석 - 데이터 삽입
-//1. 수강 여부 검사
-//2. 수업 시간 검사
-app.post('/insertData', async (req, res) => {
-  let qrdata = req.body.qrdata;
-  let hakbun = qrdata.hakbun;
 
   //QR에 저장된 시간 정보
   let qr_date = qrdata.date_y + '-' + qrdata.date_m + '-' + qrdata.date_d;
@@ -154,11 +177,10 @@ app.post('/insertData', async (req, res) => {
         var set_endtime = new Date(`${mysqlDate} ${end_time}`);
         set_endtime.setMinutes(set_endtime.getMinutes() - 20);
 
-        console.log('QR 입력 시간 : ' + qrdate);
-        console.log('출석 시작 시간 : ' + set_presenttime);
-        console.log('지각 시작 시간 : ' + set_latetime);
-        console.log('출석 종료 시간 : ' + set_endtime);
-
+        // console.log('QR 입력 시간 : ' + qrdate);
+        // console.log('출석 시작 시간 : ' + set_presenttime);
+        // console.log('지각 시작 시간 : ' + set_latetime);
+        // console.log('출석 종료 시간 : ' + set_endtime);
 
         if (set_presenttime <= qrdate && qrdate < set_latetime) {
           status = 'PRESENT';
@@ -169,7 +191,7 @@ app.post('/insertData', async (req, res) => {
         } else {
           status = "ABSENT";
           res.cookie('status', status, { maxAge: 2000 });
-          console.log(`해당 과목의 출석 시간이 아닙니다2`);
+          console.log(`해당 과목의 출석 시간이 아닙니다`);
         }
 
         //                  학번 - 과목코드 - 출석날짜 - 출석시간 - 출석상태
@@ -178,7 +200,9 @@ app.post('/insertData', async (req, res) => {
                       VALUES (?, ?, ?, ?, ?)`;
         params = [hakbun, courseid, mysqlDate, mysqlTime, status];
 
+        if (status =='PRESENT' ||status =='LATE' ){
         const results = await connection.promise().query(insertQuery, params);
+      }
 
         // 데이터 삽입 성공
         res.cookie('status', status, { maxAge: 2000 });

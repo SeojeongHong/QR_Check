@@ -38,7 +38,7 @@
           <h5 style="position: absolute;
                 top: 45%; left: 10%;">
           <% if (results[0].s_num!=null) { %>
-            '<%= results[0].s_num %>' 강의 검색 결과</h5>
+            '<%= results[0].s_num %>' 수강 목록 검색 결과</h5>
             <%}else{%>
               QR코드로 
                 강의를 검색하세요
@@ -59,24 +59,29 @@
         <th scope="col">담당교수</th>
         <th scope="col"></th>
       </tr>
-    </thead>
-    <tbody>
-      <% if (results.length > 0) { %>
-          <% for (let i = 0; i < results.length; i++) { %>
+      </thead>
+      <tbody>
+        <% if (results.length> 0) { %>
+          <% for (let i=0; i < results.length; i++) { %>
             <tr>
-              <th scope="row"><%= results[i].c_num %></th>
-              <td><%= results[i].c_name %></td>
-              <td><%= results[i].professor %></td>
-              <td><button type="button" class="btn btn-outline-secondary" onclick="location.href='/course/<%= results[i].c_num %>'">이동</button></td>
+              <th scope="row">
+                <%= results[i].c_num %>
+              </th>
+              <td>
+                <%= results[i].c_name %>
+              </td>
+              <td>
+                <%= results[i].professor %>
+              </td>
+              <td><button type="button" class="btn btn-outline-secondary"
+                  onclick="location.href='/course/<%= results[i].c_num %>'">이동</button></td>
             </tr>
-          <% } %>
-      <% } else { %>
-        <p>과목을 찾을 수 없습니다.</p>
-      <% } %>
-    </tbody>
-  </table>
-
-  
+            <% } %>
+              <% } else { %>
+                <p>과목을 찾을 수 없습니다.</p>
+                <% } %>
+      </tbody>
+      </table>
 </div>
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.24.0/axios.min.js"></script>
