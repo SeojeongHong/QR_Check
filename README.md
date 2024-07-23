@@ -1,6 +1,6 @@
 # QR_Check
 모바일 학생증의 QR코드를 활용한 출석 체크 시스템
-
+###### [발표자료] [QR_CHECK.pdf](https://github.com/SeojeongHong/QR_Check/files/11829637/QR_CHECK.pdf)
 <hr/>
 
 #### ✏ STACK
